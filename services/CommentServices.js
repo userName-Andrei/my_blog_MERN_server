@@ -39,7 +39,7 @@ export const remove = async (req) => {
 }
 
 export const getCommentsByPostId = async (req) => {
-    const comments = await CommentModel.find({post: req.params.postId}).sort({createdAt: -1}).populate('author');
+    const comments = await CommentModel.find({post: req.params.postId}).populate('author');
 
     if (comments.length === 0) {
         return ({
@@ -47,7 +47,9 @@ export const getCommentsByPostId = async (req) => {
         })
     }
 
-    return comments;
+    const commetnsWithoutPassword = comments.map(comment => ({...comment._doc, author: removePassword(comment._doc.author._doc)}))
+
+    return commetnsWithoutPassword;
 }
 
 export const getAll = async (req) => {
@@ -55,9 +57,11 @@ export const getAll = async (req) => {
 
     if (comments.length === 0) {
         return ({
-            message: `Комментариев к данной статье пока нет`
+            message: `Комментариев пока нет`
         })
     }
 
-    return comments;
+    const commetnsWithoutPassword = comments.map(comment => ({...comment._doc, author: removePassword(comment._doc.author._doc)}))
+
+    return commetnsWithoutPassword;
 }

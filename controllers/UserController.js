@@ -17,6 +17,10 @@ export const login = async (req, res) => {
     try {
         const user = await UserServices.login(req);
 
+        if (user.message) {
+            return res.status(401).json(user)
+        }
+
         res.json(user);
     } catch (error) {
         console.log(error)

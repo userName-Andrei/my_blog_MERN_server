@@ -14,10 +14,9 @@ export const userValidation = [
                         })
         }),
     body('name', 'Имя должно быть больше 2 символов').isLength({min: 2}).escape().trim(),
-    body('password', 'Пароль должен содержать цифры и быть более 5 символов')
+    body('password', 'Пароль должен быть более 5 символов')
         .escape()
         .isLength({ min: 5 })
-        .matches(/\d/)
 ]
 
 export const postValidation = [

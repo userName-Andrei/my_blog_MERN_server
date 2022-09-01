@@ -3,9 +3,12 @@ import bcrypt from 'bcrypt';
 
 import UserModel from '../models/UserModel.js';
 import removePassword from '../utils/removePasswordFromDoc.js';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 export const register = async (req) => {
-    const {name, password, email, avatarUrl} = req.body;
+    const {name, password, email} = req.body;
 
     const salt = await bcrypt.genSalt(10)
     const hash = await bcrypt.hash(password, salt)
@@ -14,7 +17,7 @@ export const register = async (req) => {
         name,
         passwordHash: hash,
         email,
-        avatarUrl
+        avatarUrl: req.file ? `${process.env.HOST + req.file.fieldname}/${req.file.filename}` : process.env.HOST + 'avatar/default.png',
     })
 
     const userDoc = (await doc.save())._doc

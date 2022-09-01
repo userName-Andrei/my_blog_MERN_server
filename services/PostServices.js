@@ -3,14 +3,14 @@ import CommentModel from '../models/CommentModel.js';
 import removePassword from '../utils/removePasswordFromDoc.js';
 
 export const create = async (req) => {
-    const {title, text, previewUrl, tags} = req.body;
+    const {title, text, tags} = req.body;
 
     const doc = new PostModel({
         title,
         text,
         author: req.userId,
-        previewUrl,
-        tags
+        previewUrl: req.file ? `${process.env.HOST + req.file.fieldname}/${req.file.filename}` : process.env.HOST + 'preview/default.jpg',
+        tags: tags.split(',').map(tag => tag.trim())
     });
 
     const post = await doc.save();
@@ -21,9 +21,10 @@ export const create = async (req) => {
 export const getAll = async (req) => {
     const queryes = req.query;
     const perPage = queryes.limit || 5;
+    const count = await PostModel.countDocuments({});
     const posts = await PostModel.find().sort({createdAt: -1}).limit(perPage).skip(queryes.lastpost).populate('author');
 
-    if (!posts) {
+    if (count === 0) {
         return ({
             message: 'Статей пока нет...'
         })
@@ -95,26 +96,46 @@ export const update = async (req) => {
         })
     }
 
-    await PostModel.updateOne(
+    const post = await PostModel.findOneAndUpdate(
         {_id: req.params.id},
         {
             title: req.body.title,
             text: req.body.text,
-            tags: req.body.tags,
-            previewUrl: req.body.previewUrl,
+            tags: req.body.tags.split(',').map(tag => tag.trim()),
+            previewUrl: req.file ? `${process.env.HOST + req.file.fieldname}/${req.file.filename}` : process.env.HOST + 'preview/default.jpg',
             author: req.userId,
-        }
+        },
+        {new: true}
     )
 
-    return ({
-        success: 'Статья успешно обновлена!'
-    });
+    return post;
+}
+
+export const getAllTags = async () => {
+    let tags = await PostModel.find({}, 'tags').sort({createdAt: -1});
+
+    if (!tags) {
+        return ({
+            message: 'Статей пока нет.'
+        });
+    }
+
+    tags = tags.map(obj => obj.tags.join(' ')).join(' ').trim().split(' ');
+
+    return Array.from(new Set(tags));
 }
 
 export const getPostsByTag = async (req) => {
-    const posts = await PostModel.find({tags: req.params.tag}).populate('author');
+    const queryes = req.query;
+    const perPage = queryes.limit || 5;
+    const count = await PostModel.countDocuments({});
+    const posts = await PostModel.find({tags: req.params.tag})
+                                 .sort({createdAt: -1})
+                                 .limit(perPage)
+                                 .skip(queryes.lastpost)
+                                 .populate('author');
 
-    if (!posts) {
+    if (count === 0) {
         return ({
             message: `Статьи по тегу "${req.params.tag}" не найдены`
         })
