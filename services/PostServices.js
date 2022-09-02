@@ -1,6 +1,7 @@
 import PostModel from '../models/PostModel.js';
 import CommentModel from '../models/CommentModel.js';
 import removePassword from '../utils/removePasswordFromDoc.js';
+import fs from 'fs';
 
 export const create = async (req) => {
     const {title, text, tags} = req.body;
@@ -75,6 +76,18 @@ export const remove = async (req) => {
     post = await PostModel.deleteOne({_id: req.params.id});
 
     await CommentModel.deleteMany({post: req.params.id})
+
+    fs.stat(`uploads/img/previews/preview-${req.params.id}.webp`, function(error, stat) {
+        if(error == null) {
+            fs.unlink(`uploads/img/previews/preview-${req.params.id}.webp`, err => {
+                if(err) throw err;
+            });
+        } else if(error.code == 'ENOENT') {
+            console.log('post has default preview');
+        } else {
+            console.log(error);
+        }
+    })
     
     return ({
         success: `Статья c id=${req.params.id} удалена`
