@@ -12,7 +12,7 @@ const postRoutes = express.Router();
 const upload = multer({storage: multer.diskStorage({
     destination: 'uploads/img/previews',
     filename: async function (req, file, cb) {
-        cb(null, file.fieldname + '-' + req.params.id + file.originalname.match(/\.jpeg|\.jpg|\.png|\.gif/)[0])
+        cb(null, file.fieldname + '-' + file.originalname.replace(/\.jpeg|\.jpg|\.png|\.gif/g, '') + file.originalname.match(/\.jpeg|\.jpg|\.png|\.gif/)[0])
     }
 })});
 
