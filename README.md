@@ -1,6 +1,8 @@
 # Хостинг
 databse - MongoDB Atlas;
+
 sever - render.com;
+
 front - github pages;
 
 Ссылка на проект - https://username-andrei.github.io/my_blog_MERN_client/
